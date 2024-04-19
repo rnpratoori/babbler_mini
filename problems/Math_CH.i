@@ -19,6 +19,13 @@
   [../]
 []
 
+[AuxVariables]
+  [pvf]
+    order = FIRST
+    family = LAGRANGE
+  []
+[]
+
 [Kernels]
   [./c_dot]
     type = TimeDerivative
@@ -34,6 +41,14 @@
     mob_name = M
     kappa_name = kappa_c
   [../]
+[]
+
+[AuxKernels]
+  [pvf]
+    type = CHEAux
+    variable = pvf
+    coupled = c
+  []
 []
 
 [BCs]
@@ -82,5 +97,5 @@
 
 [Outputs]
   exodus = true
-  perf_graph = true
+  # perf_graph = true
 []
