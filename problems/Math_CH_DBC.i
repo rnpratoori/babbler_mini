@@ -1,10 +1,13 @@
 [Mesh]
   type = GeneratedMesh
   dim = 2
-  nx = 100
-  ny = 100
-  xmax = 60
-  ymax = 60
+  # nx = 100
+  # ny = 100
+  nx = 25
+  ny = 25
+  xmax = 10  # mum
+  ymax = 10  # mum
+  uniform_refine = 2
 []
 
 [Variables]
@@ -13,6 +16,7 @@
     family = HERMITE
     [./InitialCondition]
       type = RandomIC
+      seed = 123
       min = -0.1
       max =  0.1
     [../]
@@ -20,10 +24,10 @@
 []
 
 [AuxVariables]
-  [pvf]
+  [./pvf]
     order = FIRST
     family = LAGRANGE
-  []
+  [../]
 []
 
 [Kernels]
@@ -44,11 +48,11 @@
 []
 
 [AuxKernels]
-  [pvf]
+  [./pvf]
     type = CHEAux
     variable = pvf
     coupled = c
-  []
+  [../]
 []
 
 [BCs]
@@ -61,19 +65,24 @@
 
 [Materials]
   [./mat]
+    # Units of M are m^2 mol / (J s)
+    # Units of kappa_c are J m^2 / mol
     type = GenericConstantMaterial
     prop_names  = 'M   kappa_c'
-    prop_values = '1.0 0.5'
+    prop_values = '1e-01
+                   5e-02'
+                  # M*mum_m^2/eV_J
+                  # kappa_c*eV_J*mu_m^2
   [../]
 []
 
-[Postprocessors]
-  [./top]
-    type = SideIntegralVariablePostprocessor
-    variable = c
-    boundary = top
-  [../]
-[]
+# [Postprocessors]
+#   [./top]
+#     type = SideIntegralVariablePostprocessor
+#     variable = c
+#     boundary = top
+#   [../]
+# []
 
 [Executioner]
   type = Transient
@@ -90,12 +99,27 @@
 
   l_tol = 1e-4
   l_max_its = 30
+  nl_max_its = 30
+  nl_abs_tol = 1e-9
+  
+  [./TimeStepper]
+    # Turn on time stepping
+    type = IterationAdaptiveDT
+    dt = 2.0
+    cutback_factor = 0.8
+    growth_factor = 1.5
+    optimal_iterations = 7
+  [../]
 
-  dt = 2.0
-  end_time = 80.0
+  end_time = 80.0 # seconds
+
+  [./Adaptivity]
+    coarsen_fraction = 0.1
+    refine_fraction = 0.7
+    max_h_level = 2
+  [../]
 []
 
 [Outputs]
   exodus = true
-  # perf_graph = true
 []

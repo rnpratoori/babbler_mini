@@ -1,10 +1,12 @@
 [Mesh]
   type = GeneratedMesh
-  dim = 2
+  dim = 3
   nx = 100
   ny = 100
+  nz = 100
   xmax = 60
   ymax = 60
+  zmax = 60
 []
 
 [Variables]
@@ -84,9 +86,9 @@
   petsc_options_iname = '-pc_type -sub_ksp_type -sub_pc_type'
   petsc_options_value = 'asm      preonly       lu          '
 
-  # # Alternative preconditioning options using Hypre (algebraic multi-grid)
-  # petsc_options_iname = '-pc_type -pc_hypre_type'
-  # petsc_options_value = 'hypre    boomeramg'
+  # Alternative preconditioning options using Hypre (algebraic multi-grid)
+  #petsc_options_iname = '-pc_type -pc_hypre_type'
+  #petsc_options_value = 'hypre    boomeramg'
 
   l_tol = 1e-4
   l_max_its = 30
