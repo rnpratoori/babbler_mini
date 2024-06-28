@@ -1,19 +1,22 @@
+n = 100
+d = 10
+
 [Mesh]
     # generate a 2D, 1 mum x 1 mum mesh
     type = GeneratedMesh
     dim = 2
-    nx = 400
-    ny = 400
+    nx = ${n}
+    ny = ${n}
     # nx = 25
     # ny = 25
-    xmax = 10  # 0.1 mum
-    ymax = 10  # 0.1 mum
+    xmax = ${d}  # 0.1 mum
+    ymax = ${d}  # 0.1 mum
     # uniform_refine = 2
 []
   
 [Variables]
     # difference in the volume fractions of the 2 phases
-    [./c]
+    [./u]
         order = FIRST
         family = LAGRANGE
         [./InitialCondition]
@@ -47,16 +50,19 @@
     [./w_dot]
         type = CoupledTimeDerivative
         variable = w
-        v = c
+        v = u
     [../]
     [./coupled_res]
-        type = SplitCHWRes
+        type = SplitCHPhaseSep
         variable = w
         mob_name = M
+        c = u
+        alpha_name = alpha
+        kappa_name = kappa
     [../]
     [./coupled_parsed]
         type = SplitCHParsed
-        variable = c
+        variable = u
         f_name = f_loc
         kappa_name = kappa_c
         w = w
@@ -68,8 +74,8 @@
     [./pvf]
         type = ParsedAux
         variable = pvf
-        coupled_variables = 'c'
-        expression = '(c+1)/2'
+        coupled_variables = 'u'
+        expression = '(u+1)/2'
     [../]
     # calculate energy density from local and gradient energies (J/mol/mum^2)
     [./f_density]
@@ -77,7 +83,7 @@
         variable = f_density
         f_name = 'f_loc'
         kappa_names = 'kappa_c'
-        interfacial_vars = c
+        interfacial_vars = u
     [../]
 []
   
@@ -106,10 +112,10 @@
     [./local_energy]
         type = DerivativeParsedMaterial
         property_name = f_loc
-        coupled_variables = c
-        constant_names = 'W1    W2'
-        constant_expressions = '1/4 1/2'
-        expression = 'W1*c^4 - W2*c^2'
+        coupled_variables = u
+        constant_names = 'W1'
+        constant_expressions = '1/4'
+        expression = 'W1*(1 - u^2)^2'
         derivative_order = 2
     [../]
 []
@@ -152,9 +158,9 @@
   
     end_time = 200.0 # seconds
 
-    # # Automatic scaling for c and w
+    # # Automatic scaling for u and w
     # automatic_scaling = true
-    # scaling_group_variables = 'c w'
+    # scaling_group_variables = 'u w'
   
     # [./Adaptivity]
     #   coarsen_fraction = 0.1
@@ -164,11 +170,13 @@
 []
   
 [Outputs]
-    [10_400_trial]
+    [ex]
         type = Exodus
+        file_base = ${n}_${d}
     []
-    [10_400_trial_e]
+    [csv]
         type = CSV
+        file_base = ${n}_${d}_e
     []
 []
 
